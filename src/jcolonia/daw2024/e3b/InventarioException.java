@@ -1,0 +1,75 @@
+package jcolonia.daw2024.e3b;
+
+/**
+ * Excepción usada por la clase {@link InventarioAula} cuando los parámetros de
+ * creación del mismo no son coherentes o compatibles.
+ * 
+ * @author <a href= "mailto:dmartin.jcolonia@gmail.com">David H. Martín</a>
+ * @version 6.90 (2025426000)
+ */
+public class InventarioException extends Exception {
+	/** Identificación de versión de la clase. */
+	private static final long serialVersionUID = 2025426000L;
+
+	/**
+	 * Crea una nueva excepción sin ningún contenido. No contiene ningún texto
+	 * descriptivo.
+	 * 
+	 * @see Exception#Exception()
+	 */
+	public InventarioException() {
+		super();
+	}
+
+	/**
+	 * Crea una nueva excepción con un texto descriptivo.
+	 * 
+	 * @param mensaje el texto correspondiente.
+	 * @see Exception#Exception(String)
+	 */
+	public InventarioException(String mensaje) {
+		super(mensaje);
+	}
+
+	/**
+	 * Crea una excepción que contiene otra –o cualquier {@link Throwable}. Emplea
+	 * como texto descriptivo el de la excepción encapsulada.
+	 * 
+	 * @param causa la excepción a incorporar
+	 * @see Exception#Exception(Throwable)
+	 * 
+	 */
+	public InventarioException(Throwable causa) {
+		super(causa);
+	}
+
+	/**
+	 * Crea una excepción que contiene otra –o cualquier {@link Throwable} y un
+	 * texto descriptivo personalizado. El texto descriptivo puede así ser diferente
+	 * al de la excepción contenida.
+	 * 
+	 * @param mensaje el texto descriptivo a incorporar
+	 * @param causa   la excepción a incorporar
+	 * @see Exception#Exception(String, Throwable)
+	 */
+	public InventarioException(String mensaje, Throwable causa) {
+		super(mensaje, causa);
+	}
+
+	/**
+	 * Crea una excepción que contiene otra –o cualquier {@link Throwable} y un
+	 * texto descriptivo personalizado; con posibilidad de habilitar o deshabilitar
+	 * la supresión o la edición de pila.
+	 * 
+	 * @param mensaje            el texto descriptivo a incorporar
+	 * @param causa              la excepción a incorporar
+	 * @param habilitarSupresión si la supresión está habilitada o no
+	 * @param trazaPilaEditable  si la edición de pila está habilitada o no
+	 * @see Exception#Exception(String, Throwable, boolean, boolean)
+	 * @see Throwable#fillInStackTrace()
+	 * @see Throwable#addSuppressed(Throwable)
+	 */
+	public InventarioException(String mensaje, Throwable causa, boolean habilitarSupresión, boolean trazaPilaEditable) {
+		super(mensaje, causa, habilitarSupresión, trazaPilaEditable);
+	}
+}
