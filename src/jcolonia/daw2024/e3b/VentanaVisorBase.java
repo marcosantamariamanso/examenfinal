@@ -46,6 +46,14 @@ public class VentanaVisorBase {
 	private JButton botónAceptar;
 	/** El panel de estado, para mostrar mensajes de estado y avisos. */
 	private JPanel panelEstado;
+	/**
+	 * el botón «archivo», para abrir un archivo o mostrar opciones de
+	 */
+	private JButton botónArchivo;
+	/**
+	 * el botón «ayuda», para mostrar ayuda o información adicional.
+	 */
+	private JButton botónAyuda;
 
 	/**
 	 * Lanza la aplicación. Establece la apariencia general de la ventana y registra
@@ -95,6 +103,8 @@ public class VentanaVisorBase {
 			panelExterior.setLayout(new BorderLayout(10, 10));
 			panelExterior.add(getPanelEtiqueta(), BorderLayout.CENTER);
 			panelExterior.add(getPanelBotones(), BorderLayout.SOUTH);
+			panelExterior.add(getBotónArchivo(), BorderLayout.NORTH);
+			panelExterior.add(getBotónAyuda(), BorderLayout.EAST);
 		}
 		return panelExterior;
 	}
@@ -207,7 +217,29 @@ public class VentanaVisorBase {
 		}
 		return panelEstado;
 	}
-
+	/**
+	 * Localiza –o inicializa si no se ha creado todavía– el botón «archivo», que
+	 * @return el botón «archivo», para abrir un archivo o mostrar opciones de
+	 */
+	private JButton getBotónArchivo() {
+		if (botónAceptar == null) {
+			botónAceptar = new JButton("Archivo");
+			botónAceptar.setMnemonic(KeyEvent.VK_F);
+		}
+		return botónAceptar;
+		
+	}
+	/**
+	 * Localiza –o inicializa si no se ha creado todavía– el botón «ayuda», que
+	 * @return el botón «ayuda», para mostrar ayuda o información adicional.
+	 */
+	private JButton getBotónAyuda() {
+		if (botónAyuda == null) {
+			botónAyuda = new JButton("Ayuda");
+			botónAyuda.setMnemonic(KeyEvent.VK_H);
+		}
+		return botónAyuda;
+	}
 	/**
 	 * Localiza –o inicializa si no se ha creado todavía– el botón «cancelar», abajo
 	 * a la derecha.
