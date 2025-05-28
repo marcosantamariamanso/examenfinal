@@ -19,7 +19,7 @@ import java.util.Set;
  * Utilidades de acceso a una base de datos SQLite para gestión de
  * {@link InventarioAula puestos de un aula de informática}.
  * 
- * @version 09.08 (20250525001)
+ * @version 09.08 (20250525000)
  * @author <a href="dmartin.jcolonia@gmail.com">David H. Martín</a>
  */
 public class AccesoBD implements AutoCloseable {
@@ -30,7 +30,7 @@ public class AccesoBD implements AutoCloseable {
 	private static final String SQL_INSERTAR_CONTACTO = "INSERT INTO Puestos VALUES (?, ?, ?, ?)";
 
 	/** Sentencia SQL para obtener un volcado completo de los resultados. */
-	private static final String SQL_LISTADO_AULA = "SELECT * FROM Puestos WHERE código_puesto LIKE ?";
+	private static final String SQL_LISTADO_AULA = "SELECT * FROM Puestos WHERE códigoPuesto LIKE ?";
 
 	/** Sentencia SQL para vaciar los resultados. */
 	private static final String SQL_VACIAR_TABLA = "DELETE FROM Puestos";
@@ -46,9 +46,9 @@ public class AccesoBD implements AutoCloseable {
 
 	/** Nombre predeterminado del archivo de la base de datos. */
 	public static final String ARCHIVO_BD_PREDETERMINADO = "inventarioPuestosIC.db";
-
+ 
 	/** Nombre del archivo de datos para impotación/exportación. */
-	public static final String ARCHIVO_DATOS_PREDETERMINADO = "Inventario ICXX.txt";
+	private static final String NOMBRE_ARCHIVO = "Inventario ICXX.txt";
 
 	/** Configuración del acceso a la base de datos. */
 	private Properties configuración;
@@ -60,13 +60,13 @@ public class AccesoBD implements AutoCloseable {
 	private Statement sentenciaGeneralSQL;
 
 	/**
-	 * Sentencia preparada SQL, para inserciones en la base de datos.
+	 * Sentencia preparada SQL, para inserciones en la base de datos. *
 	 * 
 	 * @see #SQL_INSERTAR_CONTACTO
 	 */
 	private PreparedStatement preInserciónSQL;
 	/**
-	 * Sentencia preparada SQL, para consultas a la base de datos.
+	 * Sentencia preparada SQL, para consultas a la base de datos. *
 	 * 
 	 * @see #SQL_LISTADO_AULA
 	 */
@@ -169,7 +169,7 @@ public class AccesoBD implements AutoCloseable {
 	 * @return si existe o no
 	 * @throws AccesoBDException si el archivo existe pero no se puede leer
 	 */
-	public static boolean existeArchivo(Path ruta) throws AccesoBDException {
+	private static boolean existeArchivo(Path ruta) throws AccesoBDException {
 		boolean existe;
 
 		existe = Files.exists(ruta);
@@ -239,7 +239,7 @@ public class AccesoBD implements AutoCloseable {
 			aula = InventarioAula.of(prefijo);
 			preConsultaSQL.setString(1, prefijo + "%"); // Comodín SQL en «LIKE»
 
-			resultado = preConsultaSQL.executeQuery();
+			resultado = preConsultaSQL.executeQuery(SQL_LISTADO_AULA);
 			while (resultado.next()) {
 				códigoPuesto = resultado.getString("código_puesto");
 
@@ -312,7 +312,7 @@ public class AccesoBD implements AutoCloseable {
 	}
 
 	/**
-	 * Deja cerrada la conexión y descarta las sentencias SQL inicializadas.
+	 * Descarta las sentencias SQL inicializadas y deja cerrada la conexión.
 	 * 
 	 * @throws AccesoBDException si se produce alguna incidencia
 	 */
@@ -320,16 +320,14 @@ public class AccesoBD implements AutoCloseable {
 	public void close() throws AccesoBDException {
 		if (conexión != null) {
 			try (Connection conexiónCerrada = conexión) {
+				conexión = null;
+				sentenciaGeneralSQL = null;
+				preInserciónSQL = null;
+				preConsultaSQL = null;
 			} catch (SQLException e) {
 				String mensaje = String.format("Error en cierre de conexión: %s", e.getLocalizedMessage());
 				throw new AccesoBDException(mensaje, e);
 			}
-
-			// Cierre totalmente completo, descartamos ya referencias con mayor seguridad
-			sentenciaGeneralSQL = null;
-			preInserciónSQL = null;
-			preConsultaSQL = null;
-			conexión = null;
 		}
 	}
 
@@ -347,7 +345,7 @@ public class AccesoBD implements AutoCloseable {
 	 * @throws AccesoBDException si se produce alguna incidencia al acceder a la
 	 *                           base de datos
 	 */
-	public void generarBD(String rutaArchivo) throws AccesoBDException {
+	private void generarBD(String rutaArchivo) throws AccesoBDException, IOException {
 		AccesoArchivo archivo;
 		InventarioAula nuevaLista;
 		List<String> contenido;
@@ -366,14 +364,14 @@ public class AccesoBD implements AutoCloseable {
 				númElementos = nuevaLista.getNúmElementos();
 
 				if (númElementos > 0) {
-					mensaje = String.format("%d equipos migrados", númElementos);
+					mensaje = String.format("%d equipos importados", númElementos);
 					VistaGeneral.mostrarTexto(mensaje);
 
 					abrirConexión();
 					// vaciarBD();
 					escribir(nuevaLista);
 				} else {
-					mensaje = String.format("%d equipos migrados, transferencia fallida", númElementos);
+					mensaje = String.format("%d equipos importados, transferencia fallida", númElementos);
 					VistaGeneral.mostrarAviso(mensaje);
 				}
 			}
@@ -381,6 +379,74 @@ public class AccesoBD implements AutoCloseable {
 			mensaje = String.format("Error de importación: %s", ex.getLocalizedMessage());
 			VistaGeneral.mostrarAviso(mensaje);
 		}
+	}
+	/**
+	 * Crea una conexión a la base de datos (alias para abrirConexión).
+	 * 
+	 * @throws SQLException si ocurre un error al conectar
+	 */
+	public void crearConexion() throws SQLException {
+	    try {
+	        abrirConexión();
+	    } catch (AccesoBDException e) {
+	        throw new SQLException("Error al crear conexión: " + e.getMessage(), e);
+	    }
+	}
+
+	/**
+	 * Crea la tabla de puestos si no existe (versión simplificada).
+	 * 
+	 * @throws SQLException si ocurre un error al crear la tabla
+	 */
+	public void crearTabla() throws SQLException {
+	    try (Statement stmt = abrirConexión().createStatement()) {
+	        stmt.execute(SQL_CREAR_TABLA);
+	        System.out.println("Tabla 'Puestos' creada/verificada");
+	    } catch (AccesoBDException e) {
+	        throw new SQLException("Error al crear tabla: " + e.getMessage(), e);
+	    }
+	}
+
+	/**
+	 * Inserta un registro en la base de datos a partir de una línea de texto con formato CSV.
+	 * 
+	 * @param linea línea de texto con formato: CODIGO##EQUIPO##NOMBRE##APELLIDOS
+	 * @throws SQLException si ocurre un error al insertar
+	 * @throws IllegalArgumentException si la línea no tiene el formato correcto
+	 */
+	public void insertarRegistro(String linea) throws SQLException, IllegalArgumentException {
+	    // Validar y dividir la línea
+	    String[] partes = linea.split("##");
+	    if (partes.length != 4) {
+	        throw new IllegalArgumentException("Formato de línea inválido. Se esperaba CODIGO##EQUIPO##NOMBRE##APELLIDOS");
+	    }
+	    
+	    try {
+	        // Usamos el método insertar existente que ya tiene PreparedStatement
+	        insertar(partes[0].trim(), 
+	                new PuestoUsuario(partes[1].trim(), partes[2].trim(), partes[3].trim()));
+	    } catch (AccesoBDException e) {
+	        throw new SQLException("Error al insertar registro: " + e.getMessage(), e);
+	    }
+	}
+
+	/**
+	 * Versión simplificada de generarBD para usar directamente desde MigrarInventarioBD.
+	 * 
+	 * @param nombreArchivo el nombre del archivo a importar
+	 * @throws SQLException si ocurre un error durante la importación
+	 */
+	public void importarDesdeArchivo(String nombreArchivo) throws SQLException {
+	    try {
+	        try {
+				generarBD(nombreArchivo);
+			} catch (IOException e) {
+				// TODO Bloque catch generado automáticamente
+				e.printStackTrace();
+			}
+	    } catch (AccesoBDException e) {
+	        throw new SQLException("Error al importar desde archivo: " + e.getMessage(), e);
+	    }
 	}
 
 	/**
@@ -392,9 +458,15 @@ public class AccesoBD implements AutoCloseable {
 	public static void main(String[] argumentos) {
 		try (AccesoBD acceso = new AccesoBD()) {
 			// Cierre implícito con close() –try_with_resources–
-			acceso.generarBD(ARCHIVO_DATOS_PREDETERMINADO);
+			try {
+				acceso.generarBD(NOMBRE_ARCHIVO);
+			} catch (IOException e) {
+				// TODO Bloque catch generado automáticamente
+				e.printStackTrace();
+			}
 		} catch (AccesoBDException e) {
 			System.err.println(e.getLocalizedMessage());
 		}
 	}
 }
+
