@@ -44,6 +44,8 @@ public class VentanaVisorBase {
 	private JButton botónCancelar;
 	/** El botón de cancelar. */
 	private JButton botónAceptar;
+	/** El panel de estado, para mostrar mensajes de estado y avisos. */
+	private JPanel panelEstado;
 
 	/**
 	 * Lanza la aplicación. Establece la apariencia general de la ventana y registra
@@ -79,7 +81,7 @@ public class VentanaVisorBase {
 		ventanaVisor.setBounds(100, 100, 450, 300);
 		ventanaVisor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ventanaVisor.getContentPane().add(getPanelExterior(), BorderLayout.CENTER);
-	}
+		ventanaVisor.getContentPane().add(getPanelEstado(), BorderLayout.SOUTH);}
 
 	/**
 	 * Localiza –o inicializa si no se ha creado todavía– el panel general exterior.
@@ -181,6 +183,29 @@ public class VentanaVisorBase {
 			panelBotones.setLayout(gl_panelBotones);
 		}
 		return panelBotones;
+	}
+	/**
+	 * Localiza –o inicializa si no se ha creado todavía– el panel de estado.
+	 * @return el botón indicado
+	 * 
+	 */
+	private JPanel getPanelEstado() {
+		if (panelEstado == null) {
+			panelEstado = new JPanel();
+			panelEstado.setBorder(new TitledBorder(null, " Estado ", TitledBorder.LEADING, TitledBorder.TOP, null,
+					new Color(59, 59, 59)));
+			panelEstado.setLayout(new BorderLayout(0, 0));
+			JTextArea estadoTexto = new JTextArea();
+			estadoTexto.setEditable(false);
+			estadoTexto.setFocusable(false);
+			estadoTexto.setLineWrap(true);
+			estadoTexto.setWrapStyleWord(true);
+			estadoTexto.setBackground(panelEstado.getBackground()); 
+			estadoTexto.setBorder(new EmptyBorder(5, 5, 5, 5));
+			panelEstado.add(estadoTexto, BorderLayout.CENTER);
+			
+		}
+		return panelEstado;
 	}
 
 	/**

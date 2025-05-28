@@ -240,4 +240,13 @@ public class VistaGeneral {
 
 		return respuesta;
 	}
+	/**
+	 * Muestra un mensaje para mostrar informaciones diversas, como el estado o avisos del programa.
+	 * @param mensaje que se lanzará a la salida estándar.
+	 */
+	public static void mostrarEstado(String mensaje) {
+		out.println(mensaje);
+		dejarEspacio();
+		preguntaSeguir();
+	}
 }
